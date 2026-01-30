@@ -1,0 +1,40 @@
+name: Macアプリ作成(選別ツール)
+
+on: [push]
+
+jobs:
+  build:
+    # 最新のMac環境（Appleシリコン推奨）でビルドします
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Python 3.10をセットアップ
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: 必要なライブラリをインストール
+      run: |
+        pip install --upgrade pip
+        # GUIアプリ作成に必要なライブラリ
+        pip install PyQt6
+        pip install numpy
+        
+        # 【重要】PyQt6と一緒に使う場合は必ず「headless」版のOpenCVを入れます
+        # (通常版を入れるとエラーで起動しません)
+        pip install opencv-python-headless
+        
+        pip install pyinstaller
+
+    - name: Mac用アプリに変換
+      run: |
+        # PyQt6は通常の設定で綺麗にパッケージ化されます
+        pyinstaller --noconfirm --onefile --windowed --name "PhotoSelector" senbetu.py
+
+    - name: アプリをアップロード
+      uses: actions/upload-artifact@v4
+      with:
+        name: MacApp_Senbetu
+        path: dist/
