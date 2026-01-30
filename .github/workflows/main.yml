@@ -1,10 +1,9 @@
-name: Macアプリ作成(選別ツール)
+name: Macアプリ作成(選別ツール・修正版)
 
 on: [push]
 
 jobs:
   build:
-    # 最新のMac環境（Appleシリコン推奨）でビルドします
     runs-on: macos-latest
 
     steps:
@@ -18,23 +17,22 @@ jobs:
     - name: 必要なライブラリをインストール
       run: |
         pip install --upgrade pip
-        # GUIアプリ作成に必要なライブラリ
         pip install PyQt6
         pip install numpy
-        
-        # 【重要】PyQt6と一緒に使う場合は必ず「headless」版のOpenCVを入れます
-        # (通常版を入れるとエラーで起動しません)
+        # エラー回避のためのヘッドレス版OpenCV
         pip install opencv-python-headless
-        
         pip install pyinstaller
 
-    - name: Mac用アプリに変換
+    - name: Mac用アプリに変換 (Debug Mode)
       run: |
-        # PyQt6は通常の設定で綺麗にパッケージ化されます
-        pyinstaller --noconfirm --onefile --windowed --name "PhotoSelector" senbetu.py
+        # 【重要】
+        # --collect-all PyQt6 : 部品漏れを完全になくす最強のコマンド
+        # --windowed 削除 : エラー時に黒い画面で原因を確認できるようにする
+        
+        pyinstaller --noconfirm --clean --onefile --name "PhotoSelector" --collect-all PyQt6 senbetu.py
 
     - name: アプリをアップロード
       uses: actions/upload-artifact@v4
       with:
-        name: MacApp_Senbetu
+        name: MacApp_Senbetu_Debug
         path: dist/
